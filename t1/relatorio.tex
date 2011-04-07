@@ -1,0 +1,38 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[top=3cm, bottom=2cm, left=3cm, right=2cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[portuguese]{babel}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{verbatim}
+
+\title{Sistemas Críticos\\[10pt]
+\Large{Aplicação Tolerante a Falhas}}
+
+\author{Pedro Batista (ext10392)\\
+pedro@ufpa.br}
+
+\begin{document}
+
+\maketitle
+
+\section{Avarias previstas e ações}
+\begin{itemize}
+	\item Serão consideradas avarias nos sensores os seguintes casos:
+	\begin{itemize}
+		\item Não siga a padronização \verb*-S_i d.ccc-, onde \verb i  é um
+			número inteiro representando o sensor correspondente,
+			\verb d  é um inteiro de 0 a 10 e \verb c  é um inteiro de 0 a 9.
+		\item O valor informado não pertença ao intervalo
+			$[0.000,10.000]$.
+		\item O valor será considerado omisso caso não esteja disponível em no máximo
+			5 segundos.
+	\end{itemize}
+\end{itemize}
+
+\section{Conclusão}
+
+\end{document}
