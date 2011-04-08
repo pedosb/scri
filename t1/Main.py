@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-import sys, signal
+import sys, signal, math
 
 TIMEOUT = 5 # segundos ou 0 para desativar
 INTERACTIVE = False
 
+#http://programming-guides.com/python/timeout-a-function
 class TimeoutException(Exception):
 	pass
 def timeout_handler(signum, frame):
@@ -61,6 +62,15 @@ def parse_sensor_input(line):
 		pass
 	return None, None
 
+def convert_volt_to_degree(volts):
+	w = 456.0
+	s = volts
+	y = 0.104
+	z = 0.01
+	k = 5.21
+	t = -w * math.log(1 - (s*y-z) / k)
+	return t
+
 if __name__=='__main__':
 	if len(sys.argv) != 1:
 		usage(sys.argv)
@@ -69,4 +79,6 @@ if __name__=='__main__':
 		value = read_sensor_sample(sys.stdin).strip()
 		if value == '':
 			break
-		print parse_sensor_input(value)
+		volts = parse_sensor_input(value)
+		if volts[0] != None:
+			print volts, convert_volt_to_degree(volts[1])
