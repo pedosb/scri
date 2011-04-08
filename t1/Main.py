@@ -71,10 +71,24 @@ def convert_volt_to_degree(volts):
 	t = -w * math.log(1 - (s*y-z) / k)
 	return t
 
+def get_ts(t1, t2):
+	if t1 == None:
+		return t2
+	elif t2 == None:
+		return t1
+	p1 = 0.978
+	p2 = 1.013
+	return (t1*p1 + t2*p2) / (p1+p2)
+
 if __name__=='__main__':
 	if len(sys.argv) != 1:
 		usage(sys.argv)
 		exit(-1)
+	print get_ts(1,1)
+	print get_ts(10,0)
+	print get_ts(0,10)
+	print get_ts(None,9)
+	print get_ts(8,None)
 	while True:
 		value = read_sensor_sample(sys.stdin).strip()
 		if value == '':

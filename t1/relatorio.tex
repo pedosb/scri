@@ -19,12 +19,25 @@ pedro@ufpa.br}
 
 \maketitle
 
-\section{Avarias previstas e ações}
+\section{Definições}
+Como nesse trabalho utilizamos apenas dois sensores como entrada, a temperatura
+que será usada como entrada para o cálculo do caudal será dada por:
+$$TS=\frac{T(i-1)*0.978+T(i-2)*1.013}{2.081}$$
+onde,
+$T(i)$ é a temperatura medida no sensor $i$.
+
+Caso um dos sensores apresente alguma avaria (Seção~\ref{sec:av_sensor}) a
+temperatura a ser usada será somente a do sensor não avariado, não necessitando
+dessa forma da equação acima.
+
+\section{Avarias previstas}
+
+\subsection{Nos sensores}\label{sec:av_sensor}
 \begin{itemize}
 	\item Serão consideradas avarias nos sensores os seguintes casos:
 	\begin{itemize}
-		\item Não siga a padronização \verb*-S_i d.ccc-, onde \verb i  é um
-			número inteiro representando o sensor correspondente,
+		\item O formato de entrada não siga a padronização \verb*-S_i d.ccc-,
+			onde \verb i  é um número inteiro representando o sensor correspondente,
 			\verb d  é um inteiro de 0 a 10 e \verb c  é um inteiro de 0 a 9.
 		\item O valor informado não pertença ao intervalo
 			$[0.000,10.000]$.
