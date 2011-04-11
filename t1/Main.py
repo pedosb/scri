@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys, signal, math
+import scipy.integrate
 
 TIMEOUT = 5 # segundos ou 0 para desativar
 INTERACTIVE = False
@@ -80,15 +81,24 @@ def get_ts(t1, t2):
 	p2 = 1.013
 	return (t1*p1 + t2*p2) / (p1+p2)
 
+def get_caudal(ts):
+	e = [float(45) - tsi for tsi in ts]
+	kc = 0.495
+	ti = float(117)
+	c = float(500) * kc * ( e[len(e)-1] + (1/ti) * scipy.integrate.trapz(e) )
+	return c
+
 if __name__=='__main__':
 	if len(sys.argv) != 1:
 		usage(sys.argv)
 		exit(-1)
-	print get_ts(1,1)
-	print get_ts(10,0)
-	print get_ts(0,10)
-	print get_ts(None,9)
-	print get_ts(8,None)
+#	print get_ts(1,1)
+#	print get_ts(10,0)
+#	print get_ts(0,10)
+#	print get_ts(None,9)
+#	print get_ts(8,None)
+	print \
+	get_caudal([1,2,3,4,3,2,3,2,3,4,20,39,10,45,46,45,45,46,46,45,45,45,45,45,45,45,45,45,45,45,45,45,40,40,40,40,40,40,40,40,40,40,40,40,40])
 	while True:
 		value = read_sensor_sample(sys.stdin).strip()
 		if value == '':
