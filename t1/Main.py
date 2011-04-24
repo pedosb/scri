@@ -3,6 +3,7 @@
 
 import sys, signal, math
 import scipy.integrate
+from scipy.interpolate import BarycentricInterpolator as inter
 import logging
 
 TIMEOUT = 5 # segundos ou 0 para desativar
@@ -31,12 +32,14 @@ def usage(argv):
 			'one per line')
 
 def calc_flow(input_file = sys.stdin):
-	logging.basicConfig(level=logging.WARNING)
+	logging.basicConfig(level=logging.DEBUG)
 	i=0
 	#Para reset
 	while True:
 		#[t][sensor_id] = value
 		sensors_value = []
+		# Se o valor de t-1 foi interpolado
+		interpolado = False
 		ts_value = []
 		n_sensors = N_SENSORS
 		i = i +1
@@ -61,11 +64,20 @@ def calc_flow(input_file = sys.stdin):
 					sensors_value.append(value)
 				try:
 					ts_value.append(convert_volt_to_degree(get_ts(sensors_value[t])))
+					interpolado = False
 				# Nenhum sensor lido
 				except ValueError, e:
 					logging.critical(e)
-					print 'fail'
-					break
+					if interpolado:
+						logging.critical("Valor anterior já é interpolado," +
+								"reiniciando...")
+						print 'fail'
+						break
+					ts_value.append(inter(range(len(ts_value)),
+						ts_value)(len(ts_value)+1))
+					interpolado = True
+					logging.debug("Interpolado valor previsto '%s'" %
+							ts_value[len(ts_value)-1])
 				print get_caudal(ts_value)
 		except Exception, e:
 			logging.exception(e)
