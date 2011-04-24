@@ -35,16 +35,26 @@ dessa forma da equação acima.
 
 \subsection{Nos sensores}\label{sec:av_sensor}
 \begin{itemize}
+	\item Definições:
+		\begin{itemize}
+			\item $i$ é o id de um sensor.
+			\item $N$ é o número de sensores.
+			\item $i\in[1..N]$.
+		\end{itemize}
 	\item Serão consideradas avarias nos sensores os seguintes casos:
 	\begin{itemize}
-		\item O formato de entrada não siga a padronização \verb*-S_i d.ccc-,
-			onde \verb i  é um número inteiro representando o sensor correspondente,
-			\verb d  é um inteiro de 0 a 10 e \verb c  é um inteiro de 0 a 9.
+		\item O formato de entrada não siga a padronização $Si~d.ccc$,
+			onde, $d\in[0..10]$ e $c\in[0..9]$.
 		\item O valor informado não pertença ao intervalo
 			$[0.000,10.000]$.
 		\item O valor será considerado omisso caso não esteja disponível em no máximo
 			5 segundos.
 	\end{itemize}
+	\item Os valores dos sensores são esperados na sequencia crescente do id
+		dos sensores, isto é, inicializando $i=1$ lemos o sensor $i$ e esperamos
+		pelo sensor $i=i+1$ até o sensor $N$ seja lido, onde o ciclo de
+		leitura se completa e voltamos a esperar o sensor $1$. Caso isso não aconteça a
+		Ação~\ref{ac:condicoes_iniciais} será executada.
 \end{itemize}
 
 \section{Conclusão}
