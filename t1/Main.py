@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 
-import sys
 import logging
+import argparse
+import sys
 import math
 
 import scipy.integrate
@@ -24,8 +25,11 @@ def usage(argv):
 	print ('<sensor_file_name> file with samples of the temperature sensors'+
 			'one per line')
 
-def calc_flow(input_file = sys.stdin):
-	logging.basicConfig(level=logging.DEBUG)
+def calc_flow(input_file = sys.stdin, verbose=False):
+	if verbose:
+		logging.basicConfig(level=logging.DEBUG)
+	else:
+		logging.basicConfig(filename='/dev/null')
 	i=0
 	#Para reset
 	while True:
@@ -249,22 +253,15 @@ def get_caudal(ts):
 	return c
 
 if __name__=='__main__':
-	if len(sys.argv) != 1:
-		usage(sys.argv)
-		exit(-1)
-	calc_flow()
-	exit(0)
-#	print get_ts(1,1)
-#	print get_ts(10,0)
-#	print get_ts(0,10)
-#	print get_ts(None,9)
-#	print get_ts(8,None)
-	print \
-#	get_caudal([1,2,3,4,3,2,3,2,3,4,20,39,10,45,46,45,45,46,46,45,45,45,45,45,45,45,45,45,45,45,45,45,40,40,40,40,40,40,40,40,40,40,40,40,40])
-#	while True:
-#		value = read_sensor_sample(sys.stdin).strip()
-#		if value == '':
-#			break
-#		volts = parse_sensor_input(value)
-#		if volts[0] != None:
-#			print volts, convert_volt_to_degree(volts[1])
+	parser = argparse.ArgumentParser('Calcula caudal')
+	parser.add_argument('-f', '--file-name',
+			help = 'Arquivo com valores dos sensores')
+	parser.add_argument('-v', '--verbose', action='store_true',
+			help='Show log when running')
+	args = parser.parse_args()
+	if args.file_name:
+		input_file = open(args.file_name)
+	else:
+		input_file = sys.stdin
+	calc_flow(input_file, args.verbose)
+	input_file.close()
