@@ -12,7 +12,8 @@ MAIN = relatorio
 TARGET = $(MAIN).pdf
 DVI = $(MAIN).dvi
 
-SOURCE = $(MAIN).tex
+SOURCE = $(MAIN).tex \
+		 bibliografia.bib
 
 all : $(TARGET)
 

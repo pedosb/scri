@@ -9,6 +9,8 @@
 \usepackage{longtable}
 \usepackage{verbatim}
 \usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage[symbol*]{footmisc}
 
 \title{Sistemas Críticos\\[10pt]
 \Large{Aplicação Tolerante a Falhas}}
@@ -20,42 +22,104 @@ pedro@ufpa.br}
 
 \maketitle
 
+\section{Implementação}
+
+Como combinado com o professor por email, este trabalho implementará duas
+variantes usando apenas dois sensores visto que será um trabalho individual. A
+implementação do \textit{N-Version Programming} será representada pela variação
+na linguagem de programação, para isso duas versões foram implementadas uma
+linguagem \textit{Python} e outra em \textit{Java}.
+
+\subsection{Python}\label{python}
+Nessa versão optou-se por fazer um trabalho mais minucioso, onde produzimos
+\textit{logs} sobre os valores de entrada e podemos analisar melhor o
+comportamento do sistema. Além de conseguir tratar mais avarias que a variante
+\textit{Java} deste trabalho.
+
+\subsection{Java}\label{java}
+A versão \textit{Java} foi implementada principalmente para gerar mais confiança
+ao sistema, isto é, nenhuma funcionalidade adicional foi implementada, o
+software atende apenas aos requisitos básicos do projeto, como será destacado ao
+longo desse relatório.
+
 \section{Definições}
+
+\subsection{Média dos sensores}
 Como nesse trabalho utilizamos apenas dois sensores como entrada, a temperatura
 que será usada como entrada para o cálculo do caudal será dada por:
-$$TS=\frac{T(i-1)*0.978+T(i-2)*1.013}{2.081}$$
+\begin{equation}
+TS=\frac{T(i-1)*0.978+T(i-2)*1.013}{2.081}
+\label{eq:media_temp}
+\end{equation}
 onde,
 $T(i)$ é a temperatura medida no sensor $i$.
 
-Caso um dos sensores apresente alguma avaria (Seção~\ref{sec:av_sensor}) a
-temperatura a ser usada será somente a do sensor não avariado, não necessitando
-dessa forma da equação acima.
+\subsection{Interpolação dos valores de entrada}\label{sec:interpolar}
+Sabemos que a piscina de água da piscina não pode sofrer certas variações
+bruscas em sua temperatura, isto é, podemos modelar uma função que baseada no
+histórico da leitura de temperaturas nos dirá quais os valores esperados da
+temperatura na piscina.
+
+Este trabalho exige um estudo sobre as características físicas da piscina, da
+água e de vários outras variáveis que fogem do escopo desse trabalho. Dessa
+forma optamos por simplificar a tarefa usando um polinômio que passa por
+todos os pontos anteriores para prever o ponto atual (extrapolação). Usamos
+nesse trabalho a implementação de~\cite{interpolation} por SciPy.
 
 \section{Avarias previstas}
 
 \subsection{Nos sensores}\label{sec:av_sensor}
 \begin{itemize}
 	\item Definições:
-		\begin{itemize}
-			\item $i$ é o id de um sensor.
-			\item $N$ é o número de sensores.
-			\item $i\in[1..N]$.
-		\end{itemize}
+		\begin{description}
+			\item[Número de sensores] $N$.
+			\item[Id de um sensor] $i$ dado $i\in[1..N]$.
+			\item[Ciclo de leitura] leitura de todos os sensores em um instante.
+		\end{description}
 	\item Serão consideradas avarias nos sensores os seguintes casos:
 	\begin{itemize}
-		\item O formato de entrada não siga a padronização $Si~d.ccc$,
+		\item O formato de entrada não siga a padronização $S\_i~d.ccc$,
 			onde, $d\in[0..10]$ e $c\in[0..9]$.
 		\item O valor informado não pertença ao intervalo
 			$[0.000,10.000]$.
 		\item O valor será considerado omisso caso não esteja disponível em no máximo
-			5 segundos.
+			5 segundos\footnote{Implementado apenas na versão Python
+			(Seção~\ref{python})\label{ft:python}}.
 	\end{itemize}
 	\item Os valores dos sensores são esperados na sequencia crescente do id
 		dos sensores, isto é, inicializando $i=1$ lemos o sensor $i$ e esperamos
-		pelo sensor $i=i+1$ até o sensor $N$ seja lido, onde o ciclo de
-		leitura se completa e voltamos a esperar o sensor $1$. Caso isso não aconteça a
-		Ação~\ref{ac:condicoes_iniciais} será executada.
+		pelo sensor $i=i+1$ até o sensor $N$ seja lido, onde o ciclo de leitura
+		se completa.
+		Caso isso não aconteça a Ação~\ref{ac:condicoes_iniciais} será
+		executada\footref{ft:python}.
+	\item Caso um sensor falhe a Ação~\ref{ac:falta_sensor} será executada.
+	\item Caso todos os sensores falhem e no ciclo anterior pelo menos um deles
+		não falhou, a Ação~\ref{ac:interpolar_sensores}. Se no ciclo anterior
+		todos os sensores falharam (isto é, a Ação~\ref{ac:interpolar_sensores}
+		será executada já foi executada) ou se este é o primeiro ciclo de
+		leitura a Ação~\ref{ac:condicoes_iniciais} será
+		executada~\footref{ft:python}.
+	\item Caso todos os sensores falhem o sistema falhará e a
+		Ação~\ref{ac:condicoes_iniciais} será executada\footnote{Implementado
+		apenas na versão Java (Seção~\ref{java})\label{ft:java}}.
 \end{itemize}
+
+\subsection{Ações}
+\subsubsection{Usar apenas um sensor}\label{ac:falta_sensor}
+Caso um dos sensores apresente alguma avaria (Seção~\ref{sec:av_sensor}) a
+temperatura a ser usada será somente a do sensor não avariado, não necessitando
+dessa forma da Equação~\ref{eq:media_temp}.
+
+\subsubsection{Retornar as condições iniciais}\label{ac:condicoes_iniciais}
+Em algumas situações não poderemos confiar no histórico gerado pela
+aplicação. Isso implicará na reinicialização do sistema, isto é, a próxima
+entrada será considerada a primeira para o sistema, todo o histórico
+guardado será apagado.
+	
+\subsubsection{Prever (interpolar) o valor dos
+	sensores}\label{ac:interpolar_sensores}
+Usamos a função definida na Seção~\ref{sec:interpolar} para prever o valor da
+leitura do sensor e então assumimos que esse é verdadeiro.
 
 \section{Conclusão}
 
@@ -65,5 +129,8 @@ dessa forma da equação acima.
 	\item Scientific algorithms library for Python (SciPy) versão 0.8.0 -
 		\url{http://www.scipy.org/}
 \end{itemize}
+
+\bibliographystyle{plain}
+\bibliography{bibliografia}
 
 \end{document}

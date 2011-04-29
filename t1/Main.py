@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 
-import sys, signal, math
+import sys
+import logging
+import signal
+import math
+
 import scipy.integrate
 from scipy.interpolate import BarycentricInterpolator as inter
-import logging
+
 
 TIMEOUT = 5 # segundos ou 0 para desativar
 INTERACTIVE = False
@@ -69,8 +73,13 @@ def calc_flow(input_file = sys.stdin):
 				except ValueError, e:
 					logging.critical(e)
 					if interpolado:
-						logging.critical("Valor anterior já é interpolado," +
+						logging.critical("Valor anterior já é interpolado, " +
 								"reiniciando...")
+						print 'fail'
+						break
+					if len(ts_value) < 1:
+						logging.critial("Sem leituras para interpolar, " +
+								"reniciando...")
 						print 'fail'
 						break
 					ts_value.append(inter(range(len(ts_value)),
@@ -78,7 +87,13 @@ def calc_flow(input_file = sys.stdin):
 					interpolado = True
 					logging.debug("Interpolado valor previsto '%s'" %
 							ts_value[len(ts_value)-1])
-				print get_caudal(ts_value)
+				caudal = get_caudal(ts_value)
+				if caudal < 0:
+					print 0
+				elif caudal > 1000:
+					print 1000
+				else:
+					print caudal
 		except Exception, e:
 			logging.exception(e)
 			print 'fail'
@@ -244,10 +259,12 @@ def get_caudal(ts):
 	"""
 	if len(ts) < 1:
 		raise ValueError("'ts' deve conter pelo menos um valor")
-	e = [float(45) - tsi for tsi in ts]
-	kc = 0.495
-	ti = float(117)
-	c = float(500) * kc * ( e[len(e)-1] + (scipy.integrate.trapz(e, dx=3)/ti) )
+	e = [tsi - float(45) for tsi in ts]
+	kc = 0.0495
+	ti = float(11.7)
+#	print scipy.integrate.trapz(e)
+#	print e
+	c = float(250) * kc * ( e[len(e)-1] + (scipy.integrate.trapz(e) / ti) )
 	return c
 
 if __name__=='__main__':
