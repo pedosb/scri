@@ -1,3 +1,4 @@
+# vim: set fileencoding=utf-8 :
 import signal
 
 INTERACTIVE = False
@@ -8,6 +9,10 @@ class TimeoutException(Exception):
 	pass
 def timeout_handler(signum, frame):
 	raise TimeoutException()
+
+# Chamada quando a entrada acaba
+class InputEnd(Exception):
+	pass
 
 def read_sample(input_file):
 	"""
@@ -26,3 +31,8 @@ def read_sample(input_file):
 	signal.alarm(0) # Desativar alarme
 	return value
 
+def print_caudal(caudal, conf, suppress_confidence=False):
+	if suppress_confidence:
+		print '%f' % (caudal)
+	else:
+		print '%f, %f' % (caudal, conf)

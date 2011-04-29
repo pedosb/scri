@@ -1,4 +1,4 @@
-\documentclass[a4paper,12pt]{article}
+\documentclass[a4paper,10pt]{article}
 
 \usepackage[top=3cm, bottom=2cm, left=3cm, right=2cm]{geometry}
 \usepackage[utf8]{inputenc}
@@ -10,7 +10,8 @@
 \usepackage{verbatim}
 \usepackage{hyperref}
 \usepackage{enumitem}
-\usepackage[symbol*]{footmisc}
+\usepackage[symbol*,stable]{footmisc}
+%\usepackage[stable]{footmisc}
 
 \title{Sistemas Críticos\\[10pt]
 \Large{Aplicação Tolerante a Falhas}}
@@ -42,6 +43,27 @@ ao sistema, isto é, nenhuma funcionalidade adicional foi implementada, o
 software atende apenas aos requisitos básicos do projeto, como será destacado ao
 longo desse relatório.
 
+\subsection{Votador}
+Como teremos que votar em um número par de variantes resolvemos fazer um votador
+baseado em regras e em confiança. Dessa forma apresentamos abaixo as possíveis
+saídas do votador. Segundo a especificação a saída do votador não deve
+apresentar nenhuma confiança, então caso seja necessário desabilitar essa
+funcionalidade basta passar a opção \verb -s  para o votador, como indicado na
+Seção~\ref{sec:run_voter}.
+
+\begin{itemize}
+	\item Caso um dos programas falhem a saída será o outro.
+	\item Caso a diferença entre o resultado dos dois programas seja maior que
+		$\beta$ a saída escolhida será a do programa Python, pois esse trata
+		mais avarias (pode ser considerado mais confiável) que o programa Java.
+	\item Caso a diferença entre o resultado dos dois programas seja menor que
+		$\beta$ a saída será a média dos dois resultados.
+\end{itemize}
+
+O parâmetro $\beta$ foi introduzido para o caso em que a divergência entre os
+dois programas é muito grande, isso pode significar que um deles está errado.
+Neste trabalho setamos $\beta=5$ empiricamente.
+
 \section{Definições}
 
 \subsection{Média dos sensores}
@@ -66,6 +88,41 @@ forma optamos por simplificar a tarefa usando um polinômio que passa por
 todos os pontos anteriores para prever o ponto atual (extrapolação). Usamos
 nesse trabalho a implementação de~\cite{interpolation} por SciPy.
 
+\subsection{Confiança para o programa antes do votador\footnote{Implementado
+	apenas na versão Python (Seção~\ref{python})\label{ft:python}}}
+	\label{sec:conf_python}
+Para facilitar o trabalho de um votador, o controlador de caudal terá como saída
+não só o caudal, mais também uma confiança que poderá ser posteriormente usada na
+votação. Poderíamos implementar o cálculo da confiança usando modelos
+matemáticos, porém nesse trabalho ela é dada por um conjunto de regras mostrado
+abaixo.
+\begin{description}%[label=Confiança (\arabic*)]
+	\item[50] Quando o caudal calculado é resultado da
+		Ação~\ref{ac:interpolar_sensores}.
+	\item[70] Quando um dos sensores falhar.
+	\item[90] Quando os dois sensores funcionam.
+\end{description}
+
+\subsection{Confiança do votador}
+Como nesse trabalho teremos que usar um votador para um número par de entradas
+decidimos implementar uma confiança de saída. Usamos para tal um conjunto de
+regras mostrado abaixo, assumindo que o programa da Seção~\ref{python} fornece
+uma confiança.
+
+\begin{description}
+	\item[30] Se o programa Python falhar.
+	\item[70] Se a diferença do resultado dos dois programas for maior que
+		$\beta$.
+	\item[75] Se o programa Java falhar.
+	\item[97] Se a diferença do resultado dos dois programas for menor que
+		$\beta$.
+\end{description}
+
+A confiança final será dada por $0.65 * c + 0.35 * cp$ onde $c$ é a confiança
+acima, e $cp$ é a confiança do programa Python apresentada na
+Seção~\ref{sec:conf_python}. No caso em que o programa Python falha a confiança
+será dada apenas por $c$.
+
 \section{Avarias previstas}
 
 \subsection{Nos sensores}\label{sec:av_sensor}
@@ -83,8 +140,7 @@ nesse trabalho a implementação de~\cite{interpolation} por SciPy.
 		\item O valor informado não pertença ao intervalo
 			$[0.000,10.000]$.
 		\item O valor será considerado omisso caso não esteja disponível em no máximo
-			5 segundos\footnote{Implementado apenas na versão Python
-			(Seção~\ref{python})\label{ft:python}}.
+			5 segundos\footref{ft:python}.
 	\end{itemize}
 	\item Os valores dos sensores são esperados na sequencia crescente do id
 		dos sensores, isto é, inicializando $i=1$ lemos o sensor $i$ e esperamos

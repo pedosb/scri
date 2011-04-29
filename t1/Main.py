@@ -13,10 +13,6 @@ from util import *
 #Não pode mudar pois os coeficientes de get_ts dependem dele
 N_SENSORS = 2
 
-# Chamada quando a entrada acaba
-class InputEnd(Exception):
-	pass
-
 class SensorOutOfOrder(Exception):
 	"""
 	Ocorre quando o sensor lido após o sensor i não é o sensor i+1
@@ -81,12 +77,21 @@ def calc_flow(input_file = sys.stdin):
 					logging.debug("Interpolado valor previsto '%s'" %
 							ts_value[len(ts_value)-1])
 				caudal = get_caudal(ts_value)
-				if caudal < 0:
-					print 0
-				elif caudal > 1000:
-					print 1000
+				conf = 0
+				if None in sensors_value[t]:
+					if (sensors_value[t][0] == None and
+							sensors_value[t][1] == None):
+						conf = 50
+					else:
+						conf = 70
 				else:
-					print caudal
+					conf = 90
+				if caudal < 0:
+					print_caudal(0, conf)
+				elif caudal > 1000:
+					print_caudal(1000, conf)
+				else:
+					print_caudal(caudal, conf)
 		except Exception, e:
 			logging.exception(e)
 			print 'fail'
