@@ -77,7 +77,7 @@ onde,
 $T(i)$ é a temperatura medida no sensor $i$.
 
 \subsection{Interpolação dos valores de entrada}\label{sec:interpolar}
-Sabemos que a piscina de água da piscina não pode sofrer certas variações
+Sabemos que a água da piscina não pode sofrer certas variações
 bruscas em sua temperatura, isto é, podemos modelar uma função que baseada no
 histórico da leitura de temperaturas nos dirá quais os valores esperados da
 temperatura na piscina.
@@ -92,7 +92,7 @@ nesse trabalho a implementação de~\cite{interpolation} por SciPy.
 	apenas na versão Python (Seção~\ref{python})\label{ft:python}}}
 	\label{sec:conf_python}
 Para facilitar o trabalho de um votador, o controlador de caudal terá como saída
-não só o caudal, mais também uma confiança que poderá ser posteriormente usada na
+não só o caudal, mas também uma confiança que poderá ser posteriormente usada na
 votação. Poderíamos implementar o cálculo da confiança usando modelos
 matemáticos, porém nesse trabalho ela é dada por um conjunto de regras mostrado
 abaixo.
@@ -150,9 +150,9 @@ será dada apenas por $c$.
 		executada\footref{ft:python}.
 	\item Caso um sensor falhe a Ação~\ref{ac:falta_sensor} será executada.
 	\item Caso todos os sensores falhem e no ciclo anterior pelo menos um deles
-		não falhou, a Ação~\ref{ac:interpolar_sensores}. Se no ciclo anterior
+		não falhou, a Ação~\ref{ac:interpolar_sensores} será executada. Se no ciclo anterior
 		todos os sensores falharam (isto é, a Ação~\ref{ac:interpolar_sensores}
-		será executada já foi executada) ou se este é o primeiro ciclo de
+		foi executada) ou se este é o primeiro ciclo de
 		leitura a Ação~\ref{ac:condicoes_iniciais} será
 		executada~\footref{ft:python}.
 	\item Caso todos os sensores falhem o sistema falhará e a
@@ -178,13 +178,59 @@ Usamos a função definida na Seção~\ref{sec:interpolar} para prever o valor d
 leitura do sensor e então assumimos que esse é verdadeiro.
 
 \section{Conclusão}
+Com a implementação desse trabalho foi possível observar que a redundância
+introduzida com o \textit{N-Version programming} pode melhorar substancialmente
+a confiança do sistema. Observamos também a grande importância da análise
+detalhada de situações de riscos, etapa essencial para o desenvolvimento do
+projeto. Além disso a tomada de decisões nessas situações também tomou algum
+tempo.
+
+Neste trabalho observamos um votador um pouco diferente dos tradicionais, pois
+este se baseia em regras para ilustrar a confiança que tem em sua saída.
 
 \section{Requisitos}
 
+O sistema foi testado em ambiente Linux, mas acredita-se que por se usar bibliotecas
+cross-platform este funciona em outros sistemas operacionais.
+
 \begin{itemize}
+	\item Python 2.6 ou superior - \url{http://www.python.org}.
+	\item Java Platform 6 - \url{http://www.java.com}.
 	\item Scientific algorithms library for Python (SciPy) versão 0.8.0 -
-		\url{http://www.scipy.org/}
+		\url{http://www.scipy.org/}.
+	\item Testado em Gentoo Linux - \url{http://www.gentoo.org}.
 \end{itemize}
+
+\section{Executando o aplicativo}\label{sec:run_voter}
+
+Quatro arquivos são necessários. O do votador (\verb Voter.py ), o do aplicativo
+Python (\verb Main.py ), o do aplicativo Java (\verb Main.java ) e os valores de
+teste (\verb teste.txt ). Abaixo exemplificamos o uso do projeto.
+
+Para gerar o caudal do programa Python executamos o seguinte comando:
+\begin{verbatim}
+$./Main.py < teste.txt > p
+\end{verbatim}
+
+O caudal do programa Java é gerado da seguinte forma:
+\begin{verbatim}
+$javac Main.java
+$java Main < teste.txt > j
+\end{verbatim}
+
+Após ter gerado os caudais o votador pode ser executado como se segue:
+\begin{verbatim}
+$./Voter -j j -p p
+\end{verbatim}
+
+Opções adicionais podem ser adquiridas nos programas Python adicionando a opção
+\verb -h  em sua execução. Uma opção interessante é a \verb --verbose  com a
+qual podemos obter informações detalhadas sobre a execução do aplicativo.
+Disponibilizamos também o script \verb run.sh  que executa os passos acima em
+terminais \verb bash  da seguinte forma:
+\begin{verbatim}
+$./run.sh teste.txt
+\end{verbatim}
 
 \bibliographystyle{plain}
 \bibliography{bibliografia}
