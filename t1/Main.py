@@ -3,23 +3,16 @@
 
 import sys
 import logging
-import signal
 import math
 
 import scipy.integrate
 from scipy.interpolate import BarycentricInterpolator as inter
 
+from util import *
 
-TIMEOUT = 5 # segundos ou 0 para desativar
-INTERACTIVE = False
 #Não pode mudar pois os coeficientes de get_ts dependem dele
 N_SENSORS = 2
 
-#http://programming-guides.com/python/timeout-a-function
-class TimeoutException(Exception):
-	pass
-def timeout_handler(signum, frame):
-	raise TimeoutException()
 # Chamada quando a entrada acaba
 class InputEnd(Exception):
 	pass
@@ -111,7 +104,7 @@ def read_sensors(input_file, n_sensors):
 	sensors_value_t = ([None for i in range(n_sensors)])
 	for si in range(len(sensors_value_t)+1)[1:]:
 		try:
-			value = read_sensor_sample(input_file)
+			value = read_sample(input_file)
 		# Ignora a "entrada" do sensor
 		except TimeoutException:
 			read_si = si
@@ -144,23 +137,6 @@ def read_sensors(input_file, n_sensors):
 					" '%s' foi encontrado" % read_si)
 		sensors_value_t[si-1] = value
 	return sensors_value_t
-
-def read_sensor_sample(input_file):
-	"""
-	Lê uma linha de input_file e a retorna.
-	Lança TimeoutException caso a leitura exceda TIMEOUT.
-	"""
-	old_handler = signal.signal(signal.SIGALRM, timeout_handler) 
-	signal.alarm(TIMEOUT)
-	value = None
-	try: 
-		if INTERACTIVE:
-			print "Leitura de sensor: "
-		value = input_file.readline()
-	finally:
-		signal.signal(signal.SIGALRM, old_handler) 
-	signal.alarm(0) # Desativar alarme
-	return value
 
 def parse_sensor_input(line):
 	"""
